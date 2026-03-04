@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Командный калькулятор прибыли | Сохранение на сервер</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header h2 {
+            font-size: 1.2em;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        .project-bar {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .project-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .project-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .project-selector label {
+            color: white;
+            font-weight: 500;
+        }
+
+        #projectSelect {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: white;
+            min-width: 250px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        #projectSelect:focus {
+            outline: 3px solid #667eea;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-project {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+
+        .btn-project:hover {
+            background-color: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-project.save {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+        }
+
+        .btn-project.server-save {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+        }
+
+        .btn-project.server-load {
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            border: none;
+        }
+
+        .btn-project.new {
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            border: none;
+        }
+
+        .btn-project.delete {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border: none;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .users-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .users-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .users-header h3 {
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .add-user-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .add-user-form input {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            width: 200px;
+            font-size: 0.95em;
+        }
+
+        .add-user-form input:focus {
+            outline: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-add-user {
+            background-color: white;
+            color: #f5576c;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-add-user:hover {
+            transform: translateY(-2px);
+        }
+
+        .users-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .user-card {
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-width: 200px;
+            backdrop-filter: blur(5px);
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .user-card.selected {
+            border-color: white;
+            background-color: rgba(255,255,255,0.3);
+            transform: scale(1.02);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #f5576c;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .user-stats {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .user-balance {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .delete-user {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2em;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .delete-user:hover {
+            opacity: 1;
+        }
+
+        .input-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .selected-user-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-income {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-expense {
+            background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-clear {
+            background: #6c757d;
+            color: white;
+        }
+
+        .table-section {
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .income-row {
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+
+        .expense-row {
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+
+        .delete-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .delete-btn:hover {
+            background-color: #dc3545;
+        }
+
+        .summary-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        .summary-card h3 {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        .profit-share {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .share-amount {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .last-saved {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-body input, .modal-body textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+
+        .modal-body input:focus, .modal-body textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-body textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .modal-btn.cancel {
+            background-color: #e0e0e0;
+            color: #666;
+        }
+
+        .modal-btn.save {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .modal-btn.save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .modal-btn.cancel:hover {
+            background-color: #d0d0d0;
+        }
+
+        /* Стили для серверных проектов */
+        .server-project-item {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            border: 2px solid #667eea30;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .server-project-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+        
+        .server-project-item.selected {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #28a74520 0%, #20c99720 100%);
+        }
+        
+        .server-project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .server-project-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .server-project-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .server-project-description {
+            color: #555;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+        
+        .server-project-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .server-project-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .server-project-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        
+        .server-project-btn.load {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .server-project-btn.download {
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            color: white;
+        }
+        
+        .server-project-btn.delete {
+            background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+            color: white;
+        }
+        
+        .server-project-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Индикатор загрузки */
+        #loadingIndicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 2000;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #ffffff;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .profit-positive {
+            color: #28a745;
+        }
+        
+        .profit-negative {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 Командный калькулятор прибыли</h1>
+            <h2>Работайте вместе, сохраняйте на сервер, делите прибыль поровну</h2>
+        </div>
+
+        <!-- Панель управления проектами -->
+        <div class="project-bar">
+            <div class="project-info">
+                <div class="project-selector">
+                    <label for="projectSelect">📁 Проект:</label>
+                    <select id="projectSelect" onchange="loadProject(this.value)">
+                        <option value="">Выберите проект...</option>
+                    </select>
+                </div>
+                <div class="last-saved" id="lastSavedInfo"></div>
+            </div>
+            <div class="project-actions">
+                <button class="btn-project save" onclick="showSaveModal()">
+                    <span>💾</span> Сохранить
+                </button>
+                <button class="btn-project server-save" onclick="saveToServer()">
+                    <span>☁️</span> Сохранить на сервер
+                </button>
+                <button class="btn-project server-load" onclick="loadFromServer()">
+                    <span>📥</span> Загрузить с сервера
+                </button>
+                <button class="btn-project new" onclick="showNewProjectModal()">
+                    <span>➕</span> Новый
+                </button>
+                <button class="btn-project delete" onclick="deleteCurrentProject()">
+                    <span>🗑️</span> Удалить
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Секция пользователей -->
+            <div class="users-section">
+                <div class="users-header">
+                    <h3>
+                        <span>👤</span> Участники проекта
+                    </h3>
+                    <div class="add-user-form">
+                        <input type="text" id="newUserName" placeholder="Имя участника" maxlength="20">
+                        <button class="btn-add-user" onclick="addUser()">➕ Добавить</button>
+                    </div>
+                </div>
+                <div class="users-list" id="usersList">
+                    <!-- Пользователи будут добавлены сюда -->
+                </div>
+            </div>
+
+            <!-- Секция ввода -->
+            <div class="input-section">
+                <div id="selectedUserInfo" class="selected-user-info" style="display: none;">
+                    <span>👤</span>
+                    <span>Выбран пользователь: <strong id="selectedUserName"></strong></span>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>📝 Описание</label>
+                        <input type="text" id="description" placeholder="Например: Продажа товара" autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>💰 Сумма</label>
+                        <input type="number" id="amount" placeholder="Введите сумму" min="0" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>📅 Дата</label>
+                        <input type="date" id="date">
+                    </div>
+                    <div class="input-group">
+                        <label>🏷️ Категория</label>
+                        <select id="category">
+                            <option value="Продажи">Продажи</option>
+                            <option value="Услуги">Услуги</option>
+                            <option value="Инвестиции">Инвестиции</option>
+                            <option value="Зарплата">Зарплата</option>
+                            <option value="Другое">Другое</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-income" onclick="addIncome()" id="addIncomeBtn" disabled>
+                        <span>➕</span> Добавить доход
+                    </button>
+                    <button class="btn btn-expense" onclick="addExpense()" id="addExpenseBtn" disabled>
+                        <span>➖</span> Добавить расход
+                    </button>
+                    <button class="btn btn-clear" onclick="clearForm()">
+                        <span>🗑️</span> Очистить
+                    </button>
+                </div>
+            </div>
+
+            <!-- Таблица транзакций -->
+            <div class="table-section">
+                <table id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Пользователь</th>
+                            <th>Описание</th>
+                            <th>Категория</th>
+                            <th>Тип</th>
+                            <th>Сумма</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Транзакции будут добавляться сюда -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Секция итогов -->
+            <div class="summary-section">
+                <div class="summary-card">
+                    <h3>📊 Общая статистика</h3>
+                    <div class="summary-item">
+                        <span>💰 Доходы:</span>
+                        <span id="totalIncome">0 ₽</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>💸 Расходы:</span>
+                        <span id="totalExpense">0 ₽</span>
+                    </div>
+                    <div class="summary-item" style="font-weight: 600;">
+                        <span>📈 Прибыль:</span>
+                        <span id="totalProfit">0 ₽</span>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h3>👥 Разделение прибыли (поровну)</h3>
+                    <div id="profitShares">
+                        <div class="summary-item">
+                            <span>Нет участников</span>
+                            <span>0 ₽</span>
+                        </div>
+                    </div>
+                    <div class="profit-share">
+                        <div class="summary-item">
+                            <span>💰 Каждому участнику:</span>
+                            <span class="share-amount" id="eachShare">0 ₽</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>📊 Всего операций: <span id="totalTransactions">0</span> | 👥 Участников: <span id="totalUsers">0</span></p>
+        </div>
+    </div>
+
+    <!-- Модальное окно для сохранения проекта -->
+    <div class="modal" id="saveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💾 Сохранить расчет</h3>
+                <button class="modal-close" onclick="closeSaveModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="projectName" placeholder="Название проекта" maxlength="50">
+                <textarea id="projectDescription" placeholder="Описание проекта (необязательно)"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeSaveModal()">Отмена</button>
+                <button class="modal-btn save" onclick="saveProject()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для нового проекта -->
+    <div class="modal" id="newProjectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✨ Новый проект</h3>
+                <button class="modal-close" onclick="closeNewProjectModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Создать новый пустой проект? Текущие данные будут сохранены в истории.</p>
+                <input type="text" id="newProjectName" placeholder="Название нового проекта" maxlength="50">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeNewProjectModal()">Отмена</button>
+                <button class="modal-btn save" onclick="createNewProject()">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для серверных проектов -->
+    <div class="modal" id="serverProjectsModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>☁️ Проекты на сервере</h3>
+                <button class="modal-close" onclick="closeServerProjectsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="serverProjectsList" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Список проектов будет загружен сюда -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeServerProjectsModal()">Закрыть</button>
+                <button class="modal-btn save" onclick="refreshServerProjects()">Обновить список</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Индикатор загрузки -->
+    <div id="loadingIndicator" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="spinner"></div>
+            <span>Загрузка...</span>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация
+        const SERVER_URL = 'http://localhost:3000/api';
+
+        // Данные приложения
+        let projects = [];
+        let currentProjectId = null;
+        let users = [];
+        let transactions = [];
+        let selectedUserId = null;
+        let autoSaveEnabled = false;
+        let autoSaveInterval = null;
+
+        // Загрузка данных
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProjects();
+            document.getElementById('date').valueAsDate = new Date();
+            addAutoSaveControls();
+            checkServerConnection();
+        });
+
+        // Функции для работы с проектами
+        function loadProjects() {
+            const savedProjects = localStorage.getItem('profitProjects');
+            
+            if (savedProjects) {
+                projects = JSON.parse(savedProjects);
+            } else {
+                // Создаем демо-проект при первом запуске
+                projects = [{
+                    id: Date.now(),
+                    name: 'Демо-проект',
+                    description: 'Пример проекта для знакомства',
+                    createdAt: new Date().toISOString(),
+                    lastModified: new Date().toISOString(),
+                    users: [{
+                        id: 1,
+                        name: 'Алексей',
+                        avatar: 'А'
+                    }],
+                    transactions: []
+                }];
+            }
+
+            updateProjectSelect();
+            
+            // Загружаем последний активный проект или первый
+            const lastProjectId = localStorage.getItem('lastProjectId');
+            if (lastProjectId && projects.some(p => p.id === parseInt(lastProjectId))) {
+                loadProject(parseInt(lastProjectId));
+            } else if (projects.length > 0) {
+                loadProject(projects[0].id);
+            }
+        }
+
+        function updateProjectSelect() {
+            const select = document.getElementById('projectSelect');
+            select.innerHTML = '<option value="">Выберите проект...</option>';
+            
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = `${project.name} (${new Date(project.lastModified).toLocaleDateString()})`;
+                if (project.id === currentProjectId) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+
+        function loadProject(projectId) {
+            if (!projectId) return;
+            
+            const project = projects.find(p => p.id === parseInt(projectId));
+            if (!project) return;
+
+            currentProjectId = project.id;
+            users = project.users || [];
+            transactions = project.transactions || [];
+            
+            updateProjectSelect();
+            updateLastSavedInfo(project);
+            
+            if (users.length > 0) {
+                selectedUserId = users[0].id;
+            } else {
+                selectedUserId = null;
+            }
+            
+            updateUsersList();
+            updateTable();
+            updateSummary();
+            
+            if (selectedUserId) {
+                selectUser(selectedUserId);
+            }
+
+            localStorage.setItem('lastProjectId', currentProjectId);
+            showNotification(`📁 Загружен проект: ${project.name}`);
+        }
+
+        function showSaveModal() {
+            if (!currentProjectId) {
+                alert('Сначала выберите или создайте проект');
+                return;
+            }
+            
+            const project = projects.find(p => p.id === currentProjectId);
+            document.getElementById('projectName').value = project ? project.name : '';
+            document.getElementById('projectDescription').value = project ? project.description || '' : '';
+            
+            document.getElementById('saveModal').classList.add('active');
+        }
+
+        function closeSaveModal() {
+            document.getElementById('saveModal').classList.remove('active');
+        }
+
+        function saveProject() {
+            const name = document.getElementById('projectName').value.trim();
+            if (!name) {
+                alert('Введите название проекта');
+                return;
+            }
+
+            const projectIndex = projects.findIndex(p => p.id === currentProjectId);
+            
+            if (projectIndex !== -1) {
+                projects[projectIndex] = {
+                    ...projects[projectIndex],
+                    name: name,
+                    description: document.getElementById('projectDescription').value.trim(),
+                    lastModified: new Date().toISOString(),
+                    users: users,
+                    transactions: transactions
+                };
+            } else {
+                const newProject = {
+                    id: Date.now(),
+                    name: name,
+                    description: document.getElementById('projectDescription').value.trim(),
+                    createdAt: new Date().toISOString(),
+                    lastModified: new Date().toISOString(),
+                    users: users,
+                    transactions: transactions
+                };
+                projects.push(newProject);
+                currentProjectId = newProject.id;
+            }
+
+            localStorage.setItem('profitProjects', JSON.stringify(projects));
+            localStorage.setItem('lastProjectId', currentProjectId);
+            
+            updateProjectSelect();
+            closeSaveModal();
+            
+            showNotification('✅ Проект сохранен');
+            updateLastSavedInfo(projects.find(p => p.id === currentProjectId));
+        }
+
+        function showNewProjectModal() {
+            document.getElementById('newProjectModal').classList.add('active');
+        }
+
+        function closeNewProjectModal() {
+            document.getElementById('newProjectModal').classList.remove('active');
+        }
+
+        function createNewProject() {
+            const name = document.getElementById('newProjectName').value.trim();
+            if (!name) {
+                alert('Введите название проекта');
+                return;
+            }
+
+            if (currentProjectId) {
+                const currentProject = projects.find(p => p.id === currentProjectId);
+                if (currentProject) {
+                    currentProject.lastModified = new Date().toISOString();
+                    currentProject.users = users;
+                    currentProject.transactions = transactions;
+                }
+            }
+
+            const newProject = {
+                id: Date.now(),
+                name: name,
+                description: '',
+                createdAt: new Date().toISOString(),
+                lastModified: new Date().toISOString(),
+                users: [{
+                    id: Date.now(),
+                    name: 'Участник 1',
+                    avatar: 'У'
+                }],
+                transactions: []
+            };
+
+            projects.push(newProject);
+            localStorage.setItem('profitProjects', JSON.stringify(projects));
+            
+            loadProject(newProject.id);
+            
+            closeNewProjectModal();
+            document.getElementById('newProjectName').value = '';
+            
+            showNotification('✨ Создан новый проект');
+        }
+
+        function deleteCurrentProject() {
+            if (!currentProjectId) {
+                alert('Нет выбранного проекта');
+                return;
+            }
+
+            if (projects.length <= 1) {
+                alert('Нельзя удалить последний проект');
+                return;
+            }
+
+            if (confirm('Вы уверены, что хотите удалить текущий проект? Это действие нельзя отменить.')) {
+                projects = projects.filter(p => p.id !== currentProjectId);
+                localStorage.setItem('profitProjects', JSON.stringify(projects));
+                
+                loadProject(projects[0].id);
+                
+                showNotification('🗑️ Проект удален');
+            }
+        }
+
+        function updateLastSavedInfo(project) {
+            const info = document.getElementById('lastSavedInfo');
+            if (project) {
+                const date = new Date(project.lastModified).toLocaleString();
+                info.textContent = `Последнее сохранение: ${date}`;
+            } else {
+                info.textContent = '';
+            }
+        }
+
+        function autoSaveProject() {
+            if (!currentProjectId) return;
+            
+            const projectIndex = projects.findIndex(p => p.id === currentProjectId);
+            if (projectIndex !== -1) {
+                projects[projectIndex].users = users;
+                projects[projectIndex].transactions = transactions;
+                projects[projectIndex].lastModified = new Date().toISOString();
+                
+                localStorage.setItem('profitProjects', JSON.stringify(projects));
+                updateLastSavedInfo(projects[projectIndex]);
+                updateProjectSelect();
+            }
+        }
+
+        // Функции для работы с пользователями
+        function addUser() {
+            const userNameInput = document.getElementById('newUserName');
+            const userName = userNameInput.value.trim();
+
+            if (!userName) {
+                alert('Пожалуйста, введите имя пользователя');
+                return;
+            }
+
+            if (users.length >= 10) {
+                alert('Максимальное количество участников - 10');
+                return;
+            }
+
+            const newUser = {
+                id: Date.now(),
+                name: userName,
+                avatar: userName.charAt(0).toUpperCase()
+            };
+
+            users.push(newUser);
+            
+            autoSaveProject();
+            
+            updateUsersList();
+            selectUser(newUser.id);
+            
+            userNameInput.value = '';
+        }
+
+        function deleteUser(userId) {
+            if (users.length <= 1) {
+                alert('Должен быть хотя бы один участник');
+                return;
+            }
+
+            if (confirm('Вы уверены, что хотите удалить этого участника?')) {
+                transactions = transactions.filter(t => t.userId !== userId);
+                users = users.filter(u => u.id !== userId);
+                
+                if (selectedUserId === userId) {
+                    selectedUserId = users[0]?.id || null;
+                }
+                
+                autoSaveProject();
+                updateUsersList();
+                updateTable();
+                updateSummary();
+            }
+        }
+
+        function selectUser(userId) {
+            selectedUserId = userId;
+            updateUsersList();
+            
+            const selectedUserInfo = document.getElementById('selectedUserInfo');
+            const selectedUserName = document.getElementById('selectedUserName');
+            const addIncomeBtn = document.getElementById('addIncomeBtn');
+            const addExpenseBtn = document.getElementById('addExpenseBtn');
+            
+            if (selectedUserId) {
+                const user = users.find(u => u.id === selectedUserId);
+                selectedUserName.textContent = user.name;
+                selectedUserInfo.style.display = 'flex';
+                addIncomeBtn.disabled = false;
+                addExpenseBtn.disabled = false;
+            } else {
+                selectedUserInfo.style.display = 'none';
+                addIncomeBtn.disabled = true;
+                addExpenseBtn.disabled = true;
+            }
+        }
+
+        function updateUsersList() {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+
+            users.forEach(user => {
+                let userIncome = 0;
+                let userExpense = 0;
+                
+                transactions.forEach(t => {
+                    if (t.userId === user.id) {
+                        if (t.type === 'Доход') {
+                            userIncome += t.amount;
+                        } else {
+                            userExpense += t.amount;
+                        }
+                    }
+                });
+                
+                const userBalance = userIncome - userExpense;
+
+                const userCard = document.createElement('div');
+                userCard.className = `user-card ${selectedUserId === user.id ? 'selected' : ''}`;
+                userCard.onclick = () => selectUser(user.id);
+                
+                userCard.innerHTML = `
+                    <div class="user-avatar">${user.avatar}</div>
+                    <div class="user-info">
+                        <div class="user-name">${escapeHtml(user.name)}</div>
+                        <div class="user-stats">
+                            Доход: ${formatCurrency(userIncome)}<br>
+                            Расход: ${formatCurrency(userExpense)}
+                        </div>
+                    </div>
+                    <div class="user-balance" style="color: ${userBalance >= 0 ? '#28a745' : '#dc3545'}">
+                        ${formatCurrency(userBalance)}
+                    </div>
+                    <button class="delete-user" onclick="event.stopPropagation(); deleteUser(${user.id})" title="Удалить пользователя">✕</button>
+                `;
+                
+                usersList.appendChild(userCard);
+            });
+
+            document.getElementById('totalUsers').textContent = users.length;
+        }
+
+        // Функции для работы с транзакциями
+        function addIncome() {
+            addTransaction('Доход');
+        }
+
+        function addExpense() {
+            addTransaction('Расход');
+        }
+
+        function addTransaction(type) {
+            if (!selectedUserId) {
+                alert('Пожалуйста, выберите пользователя');
+                return;
+            }
+
+            const description = document.getElementById('description').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const date = document.getElementById('date').value;
+            const category = document.getElementById('category').value;
+
+            if (!description) {
+                alert('Пожалуйста, введите описание операции');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                alert('Пожалуйста, введите корректную сумму (больше 0)');
+                return;
+            }
+
+            if (!date) {
+                alert('Пожалуйста, выберите дату');
+                return;
+            }
+
+            const transaction = {
+                id: Date.now(),
+                userId: selectedUserId,
+                description: description,
+                amount: amount,
+                date: date,
+                category: category,
+                type: type
+            };
+
+            transactions.push(transaction);
+            
+            autoSaveProject();
+            updateTable();
+            updateSummary();
+            clearForm();
+            
+            showNotification(`✅ ${type} добавлен: ${formatCurrency(amount)}`);
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Вы уверены, что хотите удалить эту операцию?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                autoSaveProject();
+                updateTable();
+                updateSummary();
+                showNotification('🗑️ Операция удалена');
+            }
+        }
+
+        function updateTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sortedTransactions.forEach(transaction => {
+                const user = users.find(u => u.id === transaction.userId) || { name: 'Неизвестный' };
+                const row = document.createElement('tr');
+                row.className = transaction.type === 'Доход' ? 'income-row' : 'expense-row';
+
+                row.innerHTML = `
+                    <td>${formatDate(transaction.date)}</td>
+                    <td><strong>${escapeHtml(user.name)}</strong></td>
+                    <td>${escapeHtml(transaction.description)}</td>
+                    <td>${escapeHtml(transaction.category)}</td>
+                    <td>${transaction.type === 'Доход' ? '💰 Доход' : '💸 Расход'}</td>
+                    <td style="color: ${transaction.type === 'Доход' ? '#28a745' : '#dc3545'}; font-weight: 600;">
+                        ${transaction.type === 'Доход' ? '+' : '-'} ${formatCurrency(transaction.amount)}
+                    </td>
+                    <td>
+                        <button class="delete-btn" onclick="deleteTransaction(${transaction.id})" title="Удалить">
+                            ✕
+                        </button>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById('totalTransactions').textContent = transactions.length;
+        }
+
+        function updateSummary() {
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            transactions.forEach(transaction => {
+                if (transaction.type === 'Доход') {
+                    totalIncome += transaction.amount;
+                } else {
+                    totalExpense += transaction.amount;
+                }
+            });
+
+            const totalProfit = totalIncome - totalExpense;
+
+            document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
+            document.getElementById('totalExpense').textContent = formatCurrency(totalExpense);
+            
+            const totalProfitElement = document.getElementById('totalProfit');
+            totalProfitElement.textContent = formatCurrency(Math.abs(totalProfit));
+            totalProfitElement.style.color = totalProfit >= 0 ? '#28a745' : '#dc3545';
+
+            const profitShares = document.getElementById('profitShares');
+            profitShares.innerHTML = '';
+
+            if (users.length > 0) {
+                const sharePerUser = totalProfit / users.length;
+                
+                users.forEach(user => {
+                    const userIncome = transactions
+                        .filter(t => t.userId === user.id && t.type === 'Доход')
+                        .reduce((sum, t) => sum + t.amount, 0);
+                    
+                    const userExpense = transactions
+                        .filter(t => t.userId === user.id && t.type === 'Расход')
+                        .reduce((sum, t) => sum + t.amount, 0);
+                    
+                    const userProfit = userIncome - userExpense;
+
+                    const shareDiv = document.createElement('div');
+                    shareDiv.className = 'summary-item';
+                    shareDiv.innerHTML = `
+                        <span>${escapeHtml(user.name)}:</span>
+                        <span>
+                            ${formatCurrency(userProfit)} 
+                            (доля: ${formatCurrency(sharePerUser)})
+                        </span>
+                    `;
+                    profitShares.appendChild(shareDiv);
+                });
+
+                document.getElementById('eachShare').textContent = formatCurrency(sharePerUser);
+            } else {
+                profitShares.innerHTML = '<div class="summary-item">Нет участников</div>';
+                document.getElementById('eachShare').textContent = formatCurrency(0);
+            }
+
+            updateUsersList();
+        }
+
+        // Серверные функции
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        async function saveToServer() {
+            if (!currentProjectId) {
+                alert('Сначала выберите или создайте проект');
+                return;
+            }
+
+            const project = projects.find(p => p.id === currentProjectId);
+            if (!project) return;
+
+            showLoading();
+
+            try {
+                const response = await fetch(`${SERVER_URL}/projects/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: currentProjectId,
+                        name: project.name,
+                        description: project.description,
+                        users: users,
+                        transactions: transactions
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification('✅ Проект сохранен на сервере');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения:', error);
+                showNotification('❌ Ошибка сохранения на сервер');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function loadFromServer() {
+            showLoading();
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/projects`);
+                const serverProjects = await response.json();
+                
+                showServerProjectsModal(serverProjects);
+            } catch (error) {
+                console.error('Ошибка загрузки списка:', error);
+                showNotification('❌ Ошибка загрузки списка проектов');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function showServerProjectsModal(projects) {
+            const modal = document.getElementById('serverProjectsModal');
+            const list = document.getElementById('serverProjectsList');
+            
+            list.innerHTML = projects.map(project => `
+                <div class="server-project-item" onclick="selectServerProject('${project.id}')" id="project-${project.id}">
+                    <div class="server-project-header">
+                        <span class="server-project-name">📁 ${escapeHtml(project.name)}</span>
+                        <span class="server-project-date">${new Date(project.lastModified).toLocaleString()}</span>
+                    </div>
+                    <div class="server-project-description">
+                        ${escapeHtml(project.description) || 'Нет описания'}
+                    </div>
+                    <div class="server-project-stats">
+                        <span>👥 Пользователей: ${project.users?.length || 0}</span>
+                        <span>📊 Транзакций: ${project.transactions?.length || 0}</span>
+                        <span>💾 Размер: ${(project.fileSize / 1024).toFixed(2)} KB</span>
+                    </div>
+                    <div class="server-project-actions">
+                        <button class="server-project-btn load" onclick="event.stopPropagation(); loadServerProject('${project.id}')">
+                            📥 Загрузить
+                        </button>
+                        <button class="server-project-btn download" onclick="event.stopPropagation(); downloadServerProject('${project.id}')">
+                            ⬇️ Скачать
+                        </button>
+                        <button class="server-project-btn delete" onclick="event.stopPropagation(); deleteServerProject('${project.id}')">
+                            🗑️ Удалить
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            modal.classList.add('active');
+        }
+
+        function closeServerProjectsModal() {
+            document.getElementById('serverProjectsModal').classList.remove('active');
+        }
+
+        function selectServerProject(id) {
+            document.querySelectorAll('.server-project-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.getElementById(`project-${id}`).classList.add('selected');
+        }
+
+        async function loadServerProject(id) {
+            if (!confirm('Загрузить этот проект? Текущие несохраненные данные будут потеряны.')) {
+                return;
+            }
+
+            showLoading();
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/projects/load/${id}`);
+                const projectData = await response.json();
+                
+                const existingProjectIndex = projects.findIndex(p => p.id === projectData.id);
+                
+                if (existingProjectIndex !== -1) {
+                    projects[existingProjectIndex] = projectData;
+                } else {
+                    projects.push(projectData);
+                }
+                
+                localStorage.setItem('profitProjects', JSON.stringify(projects));
+                
+                loadProject(projectData.id);
+                
+                closeServerProjectsModal();
+                showNotification(`✅ Проект "${projectData.name}" загружен`);
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                showNotification('❌ Ошибка загрузки проекта');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function downloadServerProject(id) {
+            showLoading();
+            
+            try {
+                window.open(`${SERVER_URL}/projects/export/${id}`, '_blank');
+                showNotification('⬇️ Скачивание начато');
+            } catch (error) {
+                console.error('Ошибка скачивания:', error);
+                showNotification('❌ Ошибка скачивания');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteServerProject(id) {
+            if (!confirm('Вы уверены, что хотите удалить этот проект с сервера?')) {
+                return;
+            }
+
+            showLoading();
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/projects/delete/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('🗑️ Проект удален с сервера');
+                    refreshServerProjects();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Ошибка удаления:', error);
+                showNotification('❌ Ошибка удаления');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function refreshServerProjects() {
+            showLoading();
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/projects`);
+                const serverProjects = await response.json();
+                
+                showServerProjectsModal(serverProjects);
+            } catch (error) {
+                console.error('Ошибка обновления:', error);
+                showNotification('❌ Ошибка обновления списка');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function checkServerConnection() {
+            try {
+                const response = await fetch(`${SERVER_URL}/projects`);
+                if (response.ok) {
+                    showNotification('🌐 Подключено к серверу');
+                } else {
+                    showNotification('⚠️ Нет подключения к серверу');
+                }
+            } catch {
+                showNotification('⚠️ Нет подключения к серверу');
+            }
+        }
+
+        // Функции автосохранения
+        function enableAutoSave(interval = 300000) {
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+            }
+            
+            autoSaveInterval = setInterval(() => {
+                if (currentProjectId && navigator.onLine) {
+                    saveToServer();
+                }
+            }, interval);
+            
+            showNotification('🔄 Автосохранение включено');
+        }
+
+        function disableAutoSave() {
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+                autoSaveInterval = null;
+                showNotification('⏸️ Автосохранение отключено');
+            }
+        }
+
+        function toggleAutoSave() {
+            const btn = document.getElementById('autoSaveBtn');
+            
+            if (autoSaveEnabled) {
+                disableAutoSave();
+                btn.style.background = 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)';
+                autoSaveEnabled = false;
+            } else {
+                enableAutoSave();
+                btn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                autoSaveEnabled = true;
+            }
+        }
+
+        function addAutoSaveControls() {
+            const projectActions = document.querySelector('.project-actions');
+            
+            const autoSaveBtn = document.createElement('button');
+            autoSaveBtn.className = 'btn-project';
+            autoSaveBtn.id = 'autoSaveBtn';
+            autoSaveBtn.innerHTML = '<span>🔄</span> Автосохранение';
+            autoSaveBtn.onclick = toggleAutoSave;
+            autoSaveBtn.style.background = 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)';
+            
+            projectActions.appendChild(autoSaveBtn);
+        }
+
+        // Вспомогательные функции
+        function formatCurrency(amount) {
+            return amount.toLocaleString('ru-RU', {
+                style: 'currency',
+                currency: 'RUB',
+                minimumFractionDigits: 2
+            });
+        }
+
+        function formatDate(dateString) {
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString('ru-RU', options);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function clearForm() {
+            document.getElementById('description').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('category').selectedIndex = 0;
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
