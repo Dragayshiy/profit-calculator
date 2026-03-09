@@ -13,7 +13,7 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: '50mb' }));
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Путь к папке с проектами
 const PROJECTS_DIR = path.join(__dirname, 'projects');
@@ -276,4 +276,5 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`📁 Проекты сохраняются в: ${PROJECTS_DIR}`);
     console.log(`🌐 Доступен по сети: http://${require('os').hostname()}:${PORT}`);
     console.log('🚀 ==================================\n');
+
 });
