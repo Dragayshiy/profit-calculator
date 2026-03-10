@@ -1067,18 +1067,82 @@
             showNotification(`📁 Загружен проект: ${project.name}`);
         }
 
-        function showSaveModal() {
-            if (!currentProjectId) {
-                alert('Сначала выберите или создайте проект');
-                return;
-            }
-            
-            const project = projects.find(p => p.id === currentProjectId);
-            document.getElementById('projectName').value = project ? project.name : '';
-            document.getElementById('projectDescription').value = project ? project.description || '' : '';
-            
-            document.getElementById('saveModal').classList.add('active');
+function saveToServer() {
+    if (!currentProjectId) {
+        alert('Сначала выберите или создайте проект');
+        return;
+    }
+
+    const project = projects.find(p => p.id === currentProjectId);
+    if (!project) return;
+
+    showLoading('Сохранение на сервер...');
+
+    try {
+        console.log('Отправка данных:', {
+            id: currentProjectId,
+            name: project.name,
+            description: project.description,
+            usersCount: users.length,
+            transactionsCount: transactions.length
+        });
+
+        const response = await fetch(`${SERVER_URL}/projects/save`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                id: currentProjectId,
+                name: project.name,
+                description: project.description || '',
+                users: users,
+                transactions: transactions
+            })
+        });
+
+        console.log('Статус ответа:', response.status);
+        
+        const responseText = await response.text();
+        console.log('Ответ сервера:', responseText);
+        
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (e) {
+            throw new Error('Сервер вернул некорректный JSON: ' + responseText);
         }
+
+        if (!response.ok) {
+            throw new Error(result.error || `HTTP ошибка ${response.status}`);
+        }
+
+        if (result.success) {
+            showNotification('✅ Проект сохранен на сервере', 'success');
+            
+            // Обновляем время последнего сохранения
+            const projectIndex = projects.findIndex(p => p.id === currentProjectId);
+            if (projectIndex !== -1) {
+                projects[projectIndex].lastModified = new Date().toISOString();
+                localStorage.setItem('profitProjects', JSON.stringify(projects));
+                updateLastSavedInfo(projects[projectIndex]);
+            }
+        } else {
+            throw new Error(result.error || 'Неизвестная ошибка');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка сохранения:', error);
+        showNotification(`❌ Ошибка сохранения: ${error.message}`, 'error');
+        
+        // Предлагаем сохранить локально
+        if (confirm('Не удалось сохранить на сервер. Сохранить локально?')) {
+            saveProject();
+        }
+    } finally {
+        hideLoading();
+    }
+}
 
         function closeSaveModal() {
             document.getElementById('saveModal').classList.remove('active');
